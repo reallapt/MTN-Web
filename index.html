@@ -53,6 +53,7 @@
             font-weight: 700;
             letter-spacing: -0.5px;
             margin-right: 40px;
+            text-decoration: none;
         }
 
         .logo .mtn {
@@ -451,7 +452,8 @@
                 <span class="mtn">MTN</span><span class="server"> Server</span>
             </a>
             <div class="nav-menu">
-                <a class="nav-item active" data-menu="home" onmouseenter="showMenu('home')">主页</a>
+                <!-- 主页按钮：添加 href="#" 并保留悬停显示菜单，通过JS实现平滑滚动到顶部 -->
+                <a class="nav-item active" data-menu="home" href="#" onmouseenter="showMenu('home')">主页</a>
                 <a class="nav-item" href="join.html" onmouseenter="hideMenu()">加入服务器</a>
                 <a class="nav-item" href="wiki.html" onmouseenter="hideMenu()">WIKI</a>
                 <a class="nav-item" href="map.html" onmouseenter="hideMenu()">在线地图</a>
@@ -557,9 +559,9 @@
                     {
                         title: '导航',
                         links: [
-                            { name: '加入我们', href: '#join' }, 
+                            { name: '官方序言', href: '#preamble' }, 
                             { name: '为什么选择我们', href: '#features' }, 
-                            { name: '官方序言', href: '#preamble' }
+                            { name: '加入我们', href: '#join' }
                         ]
                     }
                 ]
@@ -608,6 +610,24 @@
 
         // 点击遮罩关闭菜单
         document.getElementById('overlay').addEventListener('click', hideMenu);
+
+        // 让主页按钮可点击：平滑滚动到顶部，关闭菜单，并保持高亮
+        const homeLink = document.querySelector('.nav-item[data-menu="home"]');
+        if (homeLink) {
+            homeLink.addEventListener('click', function(e) {
+                e.preventDefault(); // 阻止 # 的默认跳转
+                // 平滑滚动到顶部
+                window.scrollTo({
+                    top: 0,
+                    behavior: 'smooth'
+                });
+                // 关闭下拉菜单并移除所有 active（hideMenu 内部会移除所有 nav-item 的 active）
+                hideMenu();
+                // 重新为当前主页按钮添加 active 类
+                this.classList.add('active');
+                // 注意：currentMenu 在 hideMenu 中被设置为 null，这不影响悬停再次显示菜单
+            });
+        }
 
         // 滚动动画
         const heroContent = document.getElementById('heroContent');
