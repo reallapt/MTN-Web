@@ -467,19 +467,17 @@
                 <span class="mtn">MTN</span><span class="server"> Server</span>
             </a>
             <div class="nav-menu">
-                <a class="nav-item" data-menu="home" onmouseenter="showMenu('home')">主页</a>
-                <a class="nav-item" data-menu="join" onmouseenter="showMenu('join')">加入服务器</a>
-                <a class="nav-item active" data-menu="wiki" onmouseenter="showMenu('wiki')">WIKI</a>
-                <a class="nav-item" data-menu="map" onmouseenter="showMenu('map')">在线地图</a>
-                <a class="nav-item" data-menu="feedback" onmouseenter="showMenu('feedback')">反馈问题</a>
+                <a class="nav-item" href="index.html">主页</a>
+                <a class="nav-item" href="join.html">加入服务器</a>
+                <a class="nav-item active" href="wiki.html">WIKI</a>
+                <a class="nav-item" href="map.html">在线地图</a>
+                <a class="nav-item" href="feedback.html">反馈问题</a>
             </div>
         </nav>
 
-        <!-- 下拉面板 -->
-        <div class="dropdown-wrapper" id="dropdownWrapper" onmouseleave="hideMenu()">
-            <div class="dropdown-content" id="dropdownContent">
-                <!-- 动态内容 -->
-            </div>
+        <!-- 下拉面板 - 仅主页需要，此处隐藏 -->
+        <div class="dropdown-wrapper" id="dropdownWrapper" style="display:none;">
+            <div class="dropdown-content" id="dropdownContent"></div>
         </div>
     </div>
 
@@ -668,135 +666,6 @@
     </main>
 
     <script>
-        let currentMenu = null;
-
-        const menuContent = {
-            home: {
-                columns: [
-                    {
-                        title: '概览',
-                        links: [{ name: '服务器介绍', href: 'index.html#intro' }, { name: '游戏特色', href: 'index.html#features' }, { name: '最新动态', href: 'index.html#news' }, { name: '玩家社区', href: 'index.html#community' }]
-                    },
-                    {
-                        title: '快速开始',
-                        links: [{ name: '新手指南', href: 'wiki.html#survival' }, { name: '游戏规则', href: 'wiki.html#rules' }, { name: '常见问题', href: 'join.html#faq' }]
-                    },
-                    {
-                        title: '资源下载',
-                        links: [{ name: '客户端下载', href: '#' }, { name: '模组包', href: '#' }, { name: '材质包', href: '#' }, { name: '皮肤', href: '#' }]
-                    }
-                ]
-            },
-            join: {
-                columns: [
-                    {
-                        title: '连接信息',
-                        links: [{ name: '服务器地址', href: 'join.html' }, { name: '版本要求', href: 'join.html' }, { name: '在线状态', href: 'join.html' }, { name: '玩家列表', href: 'join.html' }]
-                    },
-                    {
-                        title: '加入步骤',
-                        links: [{ name: '下载游戏', href: 'join.html#steps' }, { name: '配置服务器', href: 'join.html#steps' }, { name: '加入游戏', href: 'join.html#steps' }]
-                    },
-                    {
-                        title: '帮助',
-                        links: [{ name: '连接问题', href: 'join.html#faq' }, { name: '账户注册', href: '#' }, { name: '白名单申请', href: 'join.html#faq' }]
-                    }
-                ]
-            },
-            wiki: {
-                columns: [
-                    {
-                        title: '游戏指南',
-                        links: [{ name: '生存指南', href: '#survival' }, { name: '经济系统', href: '#economy' }, { name: '领地保护', href: '#land' }, { name: '交易系统', href: '#trade' }]
-                    },
-                    {
-                        title: '命令参考',
-                        links: [{ name: '基础命令', href: '#commands' }, { name: '领地命令', href: '#commands' }, { name: '经济命令', href: '#commands' }, { name: '传送命令', href: '#commands' }]
-                    },
-                    {
-                        title: '服务器信息',
-                        links: [{ name: '更新日志', href: '#changelog' }, { name: '活动日历', href: '#' }, { name: '排行榜', href: '#' }, { name: '贡献指南', href: '#' }]
-                    }
-                ]
-            },
-            map: {
-                columns: [
-                    {
-                        title: '地图浏览',
-                        links: [{ name: '主世界地图', href: 'map.html#overworld' }, { name: '下界地图', href: 'map.html#nether' }, { name: '末地地图', href: 'map.html#end' }, { name: '上传地图', href: '#' }]
-                    },
-                    {
-                        title: '位置标记',
-                        links: [{ name: '玩家位置', href: 'map.html#players' }, { name: '建筑标记', href: 'map.html#buildings' }, { name: '资源点', href: 'map.html#resources' }, { name: '商店位置', href: 'map.html#shops' }]
-                    },
-                    {
-                        title: '设置',
-                        links: [{ name: '地图设置', href: 'map.html#settings' }, { name: '显示选项', href: 'map.html#settings' }, { name: '分享位置', href: 'map.html#share' }]
-                    }
-                ]
-            },
-            feedback: {
-                columns: [
-                    {
-                        title: '提交反馈',
-                        links: [{ name: 'Bug 反馈', href: 'feedback.html#bug' }, { name: '功能建议', href: 'feedback.html#suggestion' }, { name: '投诉举报', href: 'feedback.html#report' }, { name: '其他反馈', href: 'feedback.html#other' }]
-                    },
-                    {
-                        title: '帮助支持',
-                        links: [{ name: '常见问题', href: 'feedback.html#faq' }, { name: '联系管理', href: 'feedback.html#contact' }, { name: '申诉通道', href: 'feedback.html#appeal' }]
-                    },
-                    {
-                        title: '社区',
-                        links: [{ name: 'Discord', href: '#' }, { name: 'QQ群', href: '#' }, { name: '论坛', href: '#' }]
-                    }
-                ]
-            }
-        };
-
-        function showMenu(menuKey) {
-            const dropdownWrapper = document.getElementById('dropdownWrapper');
-            const dropdownContent = document.getElementById('dropdownContent');
-            const overlay = document.getElementById('overlay');
-            const navItems = document.querySelectorAll('.nav-item');
-
-            navItems.forEach(item => item.classList.remove('active'));
-
-            currentMenu = menuKey;
-            
-            const activeItem = document.querySelector(`[data-menu="${menuKey}"]`);
-            if (activeItem) activeItem.classList.add('active');
-
-            const menu = menuContent[menuKey];
-            dropdownContent.innerHTML = menu.columns.map(col => `
-                <div class="dropdown-column">
-                    <h3>${col.title}</h3>
-                    <ul>
-                        ${col.links.map(link => `<li><a href="${link.href}">${link.name}</a></li>`).join('')}
-                    </ul>
-                </div>
-            `).join('');
-
-            dropdownWrapper.classList.add('open');
-            overlay.classList.add('visible');
-        }
-
-        function hideMenu() {
-            const dropdownWrapper = document.getElementById('dropdownWrapper');
-            const overlay = document.getElementById('overlay');
-            const navItems = document.querySelectorAll('.nav-item');
-
-            dropdownWrapper.classList.remove('open');
-            overlay.classList.remove('visible');
-            navItems.forEach(item => item.classList.remove('active'));
-            
-            const activeItem = document.querySelector('[data-menu="wiki"]');
-            if (activeItem) activeItem.classList.add('active');
-            
-            currentMenu = null;
-        }
-
-        document.getElementById('overlay').addEventListener('click', hideMenu);
-
         // 侧边栏导航高亮
         const sidebarLinks = document.querySelectorAll('.sidebar-nav a');
         const sections = document.querySelectorAll('.wiki-section');
