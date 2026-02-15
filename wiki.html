@@ -1,0 +1,824 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WIKI - MTN Server</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+            background: #000;
+            min-height: 100vh;
+            overflow-x: hidden;
+            color: #fff;
+        }
+
+        /* 导航栏容器 */
+        .nav-wrapper {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 1000;
+        }
+
+        /* 导航栏 */
+        .navbar {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 52px;
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: saturate(180%) blur(20px);
+            -webkit-backdrop-filter: saturate(180%) blur(20px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 0 22px;
+            position: relative;
+            z-index: 2;
+        }
+
+        /* Logo */
+        .logo {
+            font-size: 1.4rem;
+            font-weight: 700;
+            letter-spacing: -0.5px;
+            margin-right: 40px;
+            text-decoration: none;
+        }
+
+        .logo .mtn {
+            color: #4C93FB;
+        }
+
+        .logo .server {
+            color: #fff;
+        }
+
+        /* 导航菜单 */
+        .nav-menu {
+            display: flex;
+            gap: 8px;
+        }
+
+        .nav-item {
+            padding: 8px 16px;
+            color: #fff;
+            text-decoration: none;
+            font-size: 0.85rem;
+            font-weight: 400;
+            border-radius: 6px;
+            transition: color 0.3s ease;
+            cursor: pointer;
+            position: relative;
+        }
+
+        .nav-item:hover {
+            color: #4C93FB;
+        }
+
+        .nav-item.active {
+            color: #4C93FB;
+        }
+
+        /* 展开面板 */
+        .dropdown-wrapper {
+            position: absolute;
+            top: 52px;
+            left: 0;
+            right: 0;
+            background: rgba(0, 0, 0, 0.85);
+            backdrop-filter: saturate(180%) blur(20px);
+            -webkit-backdrop-filter: saturate(180%) blur(20px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.4s cubic-bezier(0.32, 0.72, 0, 1),
+                        opacity 0.3s ease;
+            opacity: 0;
+        }
+
+        .dropdown-wrapper.open {
+            max-height: 300px;
+            opacity: 1;
+        }
+
+        .dropdown-content {
+            padding: 30px 0;
+            max-width: 980px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: center;
+            gap: 60px;
+        }
+
+        .dropdown-column {
+            text-align: center;
+            min-width: 180px;
+        }
+
+        .dropdown-column h3 {
+            color: #4C93FB;
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 12px;
+            opacity: 0;
+            transform: translateY(15px);
+            transition: opacity 0.6s ease, transform 0.6s ease;
+        }
+
+        .dropdown-wrapper.open .dropdown-column h3 {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .dropdown-column ul {
+            list-style: none;
+        }
+
+        .dropdown-column li {
+            padding: 6px 0;
+        }
+
+        .dropdown-column a {
+            color: rgba(255, 255, 255, 0.75);
+            text-decoration: none;
+            font-size: 0.9rem;
+            transition: color 0.2s ease;
+            opacity: 0;
+            transform: translateY(12px);
+            display: inline-block;
+        }
+
+        .dropdown-wrapper.open .dropdown-column a {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .dropdown-column a:hover {
+            color: #fff;
+        }
+
+        /* 渐入动画延迟 */
+        .dropdown-column:nth-child(1) h3 { transition-delay: 0.1s; }
+        .dropdown-column:nth-child(2) h3 { transition-delay: 0.2s; }
+        .dropdown-column:nth-child(3) h3 { transition-delay: 0.3s; }
+
+        .dropdown-column:nth-child(1) li:nth-child(1) a { transition-delay: 0.2s; }
+        .dropdown-column:nth-child(1) li:nth-child(2) a { transition-delay: 0.25s; }
+        .dropdown-column:nth-child(1) li:nth-child(3) a { transition-delay: 0.3s; }
+        .dropdown-column:nth-child(1) li:nth-child(4) a { transition-delay: 0.35s; }
+
+        .dropdown-column:nth-child(2) li:nth-child(1) a { transition-delay: 0.3s; }
+        .dropdown-column:nth-child(2) li:nth-child(2) a { transition-delay: 0.35s; }
+        .dropdown-column:nth-child(2) li:nth-child(3) a { transition-delay: 0.4s; }
+        .dropdown-column:nth-child(2) li:nth-child(4) a { transition-delay: 0.45s; }
+
+        .dropdown-column:nth-child(3) li:nth-child(1) a { transition-delay: 0.4s; }
+        .dropdown-column:nth-child(3) li:nth-child(2) a { transition-delay: 0.45s; }
+        .dropdown-column:nth-child(3) li:nth-child(3) a { transition-delay: 0.5s; }
+        .dropdown-column:nth-child(3) li:nth-child(4) a { transition-delay: 0.55s; }
+
+        /* 遮罩层 */
+        .overlay {
+            position: fixed;
+            top: 52px;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.3);
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s ease, visibility 0.3s ease;
+            z-index: 1;
+        }
+
+        .overlay.visible {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        /* 主内容区 */
+        .main-content {
+            padding-top: 52px;
+        }
+
+        /* Hero Section */
+        .page-hero {
+            min-height: 50vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            padding: 80px 20px;
+            background: linear-gradient(180deg, #000 0%, #0a0a1a 100%);
+        }
+
+        .page-title {
+            font-size: 4rem;
+            font-weight: 700;
+            margin-bottom: 20px;
+            letter-spacing: -1px;
+        }
+
+        .page-title .highlight {
+            color: #4C93FB;
+        }
+
+        .page-subtitle {
+            font-size: 1.25rem;
+            color: rgba(255, 255, 255, 0.6);
+            max-width: 600px;
+        }
+
+        /* 内容布局 */
+        .wiki-layout {
+            display: flex;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 40px 20px;
+            gap: 40px;
+        }
+
+        /* 侧边导航 */
+        .wiki-sidebar {
+            width: 240px;
+            flex-shrink: 0;
+            position: sticky;
+            top: 92px;
+            height: fit-content;
+        }
+
+        .sidebar-title {
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: rgba(255, 255, 255, 0.5);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 16px;
+        }
+
+        .sidebar-nav {
+            list-style: none;
+        }
+
+        .sidebar-nav li {
+            margin-bottom: 4px;
+        }
+
+        .sidebar-nav a {
+            display: block;
+            padding: 10px 16px;
+            color: rgba(255, 255, 255, 0.7);
+            text-decoration: none;
+            font-size: 0.9rem;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+        }
+
+        .sidebar-nav a:hover {
+            background: rgba(255, 255, 255, 0.05);
+            color: #fff;
+        }
+
+        .sidebar-nav a.active {
+            background: rgba(76, 147, 251, 0.1);
+            color: #4C93FB;
+        }
+
+        /* 主内容 */
+        .wiki-content {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .wiki-section {
+            margin-bottom: 60px;
+            padding-bottom: 40px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .wiki-section:last-child {
+            border-bottom: none;
+        }
+
+        .wiki-section h2 {
+            font-size: 1.75rem;
+            font-weight: 700;
+            margin-bottom: 24px;
+            color: #4C93FB;
+        }
+
+        .wiki-section h3 {
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin: 24px 0 16px;
+        }
+
+        .wiki-section p {
+            color: rgba(255, 255, 255, 0.7);
+            line-height: 1.8;
+            margin-bottom: 16px;
+        }
+
+        /* 命令表格 */
+        .command-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+        }
+
+        .command-table th,
+        .command-table td {
+            padding: 12px 16px;
+            text-align: left;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .command-table th {
+            background: rgba(76, 147, 251, 0.1);
+            color: #4C93FB;
+            font-weight: 600;
+        }
+
+        .command-table td {
+            color: rgba(255, 255, 255, 0.7);
+        }
+
+        .command-table code {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-family: 'Courier New', monospace;
+            color: #4ade80;
+        }
+
+        /* 规则列表 */
+        .rules-list {
+            list-style: none;
+        }
+
+        .rules-list li {
+            padding: 16px 20px;
+            background: rgba(255, 255, 255, 0.02);
+            border-radius: 12px;
+            margin-bottom: 12px;
+            border-left: 3px solid #4C93FB;
+            color: rgba(255, 255, 255, 0.7);
+            line-height: 1.6;
+        }
+
+        .rules-list li strong {
+            color: #fff;
+        }
+
+        /* 更新日志 */
+        .changelog-item {
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.02);
+            border-radius: 12px;
+            margin-bottom: 16px;
+        }
+
+        .changelog-date {
+            font-size: 0.85rem;
+            color: #4C93FB;
+            margin-bottom: 8px;
+        }
+
+        .changelog-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-bottom: 12px;
+        }
+
+        .changelog-list {
+            list-style: none;
+            color: rgba(255, 255, 255, 0.7);
+        }
+
+        .changelog-list li {
+            padding: 4px 0;
+            padding-left: 20px;
+            position: relative;
+        }
+
+        .changelog-list li::before {
+            content: '•';
+            position: absolute;
+            left: 0;
+            color: #4C93FB;
+        }
+
+        /* 响应式 */
+        @media (max-width: 900px) {
+            .wiki-layout {
+                flex-direction: column;
+            }
+
+            .wiki-sidebar {
+                width: 100%;
+                position: static;
+                margin-bottom: 40px;
+            }
+
+            .sidebar-nav {
+                display: flex;
+                flex-wrap: wrap;
+                gap: 8px;
+            }
+
+            .sidebar-nav li {
+                margin-bottom: 0;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .page-title {
+                font-size: 2.5rem;
+            }
+
+            .command-table {
+                font-size: 0.85rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- 遮罩层 -->
+    <div class="overlay" id="overlay"></div>
+
+    <!-- 导航栏 -->
+    <div class="nav-wrapper">
+        <nav class="navbar">
+            <a href="index.html" class="logo">
+                <span class="mtn">MTN</span><span class="server"> Server</span>
+            </a>
+            <div class="nav-menu">
+                <a class="nav-item" data-menu="home" onmouseenter="showMenu('home')">主页</a>
+                <a class="nav-item" data-menu="join" onmouseenter="showMenu('join')">加入服务器</a>
+                <a class="nav-item active" data-menu="wiki" onmouseenter="showMenu('wiki')">WIKI</a>
+                <a class="nav-item" data-menu="map" onmouseenter="showMenu('map')">在线地图</a>
+                <a class="nav-item" data-menu="feedback" onmouseenter="showMenu('feedback')">反馈问题</a>
+            </div>
+        </nav>
+
+        <!-- 下拉面板 -->
+        <div class="dropdown-wrapper" id="dropdownWrapper" onmouseleave="hideMenu()">
+            <div class="dropdown-content" id="dropdownContent">
+                <!-- 动态内容 -->
+            </div>
+        </div>
+    </div>
+
+    <!-- 主内容 -->
+    <main class="main-content">
+        <!-- Hero -->
+        <section class="page-hero">
+            <h1 class="page-title"><span class="highlight">WIKI</span></h1>
+            <p class="page-subtitle">服务器百科全书，帮助你快速上手</p>
+        </section>
+
+        <!-- Wiki 内容 -->
+        <div class="wiki-layout">
+            <!-- 侧边导航 -->
+            <aside class="wiki-sidebar">
+                <div class="sidebar-title">目录</div>
+                <ul class="sidebar-nav">
+                    <li><a href="#survival" class="active">生存指南</a></li>
+                    <li><a href="#economy">经济系统</a></li>
+                    <li><a href="#land">领地保护</a></li>
+                    <li><a href="#trade">交易系统</a></li>
+                    <li><a href="#commands">命令参考</a></li>
+                    <li><a href="#rules">服务器规则</a></li>
+                    <li><a href="#changelog">更新日志</a></li>
+                </ul>
+            </aside>
+
+            <!-- 主内容 -->
+            <div class="wiki-content">
+                <!-- 生存指南 -->
+                <section class="wiki-section" id="survival">
+                    <h2>生存指南</h2>
+                    <p>欢迎来到 MTN Server！这里是一些帮助你快速开始的建议。</p>
+                    
+                    <h3>新手起步</h3>
+                    <p>刚进入服务器时，建议先寻找一个适合建造的地点。使用 <code>/rtp</code> 命令可以随机传送到一个安全位置。</p>
+                    
+                    <h3>资源获取</h3>
+                    <p>服务器设有资源世界，你可以使用 <code>/resource</code> 前往采集资源，不影响主世界的地形。</p>
+                    
+                    <h3>生存技巧</h3>
+                    <p>建议在夜晚待在室内，怪物会对你造成伤害。你可以通过种植农作物和驯养动物来获取食物。</p>
+                </section>
+
+                <!-- 经济系统 -->
+                <section class="wiki-section" id="economy">
+                    <h2>经济系统</h2>
+                    <p>服务器使用虚拟货币系统，你可以通过各种方式赚取金币。</p>
+                    
+                    <h3>赚钱方式</h3>
+                    <p>出售物品给商店、完成任务、参与活动都可以获得金币奖励。</p>
+                    
+                    <h3>消费方式</h3>
+                    <p>你可以在玩家商店购买物品、使用传送服务、扩建领地等。</p>
+                    
+                    <h3>查看余额</h3>
+                    <p>使用 <code>/balance</code> 或 <code>/money</code> 查看你的账户余额。</p>
+                </section>
+
+                <!-- 领地保护 -->
+                <section class="wiki-section" id="land">
+                    <h2>领地保护</h2>
+                    <p>领地系统可以保护你的建筑不被他人破坏。</p>
+                    
+                    <h3>创建领地</h3>
+                    <p>使用木锄选择两个对角点，然后使用 <code>/res create [名称]</code> 创建领地。</p>
+                    
+                    <h3>领地权限</h3>
+                    <p>你可以设置领地的各种权限，如是否允许他人进入、使用按钮、打开箱子等。</p>
+                    
+                    <h3>邀请好友</h3>
+                    <p>使用 <code>/res pset [玩家] [权限] true/false</code> 给予好友特定权限。</p>
+                </section>
+
+                <!-- 交易系统 -->
+                <section class="wiki-section" id="trade">
+                    <h2>交易系统</h2>
+                    <p>服务器支持玩家之间的安全交易。</p>
+                    
+                    <h3>玩家交易</h3>
+                    <p>右键点击其他玩家发送交易请求，双方同意后即可开始交易。</p>
+                    
+                    <h3>商店系统</h3>
+                    <p>你可以在自己的领地内创建商店，出售或收购物品。</p>
+                </section>
+
+                <!-- 命令参考 -->
+                <section class="wiki-section" id="commands">
+                    <h2>命令参考</h2>
+                    <p>以下是服务器常用的命令列表。</p>
+                    
+                    <table class="command-table">
+                        <thead>
+                            <tr>
+                                <th>命令</th>
+                                <th>说明</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><code>/spawn</code></td>
+                                <td>返回出生点</td>
+                            </tr>
+                            <tr>
+                                <td><code>/rtp</code></td>
+                                <td>随机传送</td>
+                            </tr>
+                            <tr>
+                                <td><code>/home</code></td>
+                                <td>返回家中</td>
+                            </tr>
+                            <tr>
+                                <td><code>/sethome</code></td>
+                                <td>设置家</td>
+                            </tr>
+                            <tr>
+                                <td><code>/tpa [玩家]</code></td>
+                                <td>请求传送到某玩家</td>
+                            </tr>
+                            <tr>
+                                <td><code>/money</code></td>
+                                <td>查看余额</td>
+                            </tr>
+                            <tr>
+                                <td><code>/res create [名称]</code></td>
+                                <td>创建领地</td>
+                            </tr>
+                            <tr>
+                                <td><code>/back</code></td>
+                                <td>返回上一位置</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </section>
+
+                <!-- 服务器规则 -->
+                <section class="wiki-section" id="rules">
+                    <h2>服务器规则</h2>
+                    <p>请遵守以下规则，共同维护良好的游戏环境。</p>
+                    
+                    <ul class="rules-list">
+                        <li><strong>禁止作弊</strong> - 使用任何外挂、模组作弊将导致永久封禁</li>
+                        <li><strong>禁止恶意破坏</strong> - 不得破坏他人建筑或领地</li>
+                        <li><strong>禁止恶意PK</strong> - 未经同意不得攻击其他玩家</li>
+                        <li><strong>禁止诈骗</strong> - 交易欺诈将受到严厉处罚</li>
+                        <li><strong>文明交流</strong> - 禁止辱骂、歧视性言论</li>
+                        <li><strong>禁止利用漏洞</strong> - 发现漏洞请及时报告，不得利用</li>
+                    </ul>
+                </section>
+
+                <!-- 更新日志 -->
+                <section class="wiki-section" id="changelog">
+                    <h2>更新日志</h2>
+                    
+                    <div class="changelog-item">
+                        <div class="changelog-date">2024年1月15日</div>
+                        <div class="changelog-title">版本 1.0.3</div>
+                        <ul class="changelog-list">
+                            <li>新增资源世界定期重置功能</li>
+                            <li>优化服务器性能</li>
+                            <li>修复领地权限显示错误</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="changelog-item">
+                        <div class="changelog-date">2024年1月10日</div>
+                        <div class="changelog-title">版本 1.0.2</div>
+                        <ul class="changelog-list">
+                            <li>新增玩家商店系统</li>
+                            <li>增加新的成就奖励</li>
+                            <li>修复若干已知问题</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="changelog-item">
+                        <div class="changelog-date">2024年1月5日</div>
+                        <div class="changelog-title">版本 1.0.1</div>
+                        <ul class="changelog-list">
+                            <li>服务器正式开服</li>
+                            <li>基础功能上线</li>
+                        </ul>
+                    </div>
+                </section>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        let currentMenu = null;
+
+        const menuContent = {
+            home: {
+                columns: [
+                    {
+                        title: '概览',
+                        links: [{ name: '服务器介绍', href: 'index.html#intro' }, { name: '游戏特色', href: 'index.html#features' }, { name: '最新动态', href: 'index.html#news' }, { name: '玩家社区', href: 'index.html#community' }]
+                    },
+                    {
+                        title: '快速开始',
+                        links: [{ name: '新手指南', href: 'wiki.html#survival' }, { name: '游戏规则', href: 'wiki.html#rules' }, { name: '常见问题', href: 'join.html#faq' }]
+                    },
+                    {
+                        title: '资源下载',
+                        links: [{ name: '客户端下载', href: '#' }, { name: '模组包', href: '#' }, { name: '材质包', href: '#' }, { name: '皮肤', href: '#' }]
+                    }
+                ]
+            },
+            join: {
+                columns: [
+                    {
+                        title: '连接信息',
+                        links: [{ name: '服务器地址', href: 'join.html' }, { name: '版本要求', href: 'join.html' }, { name: '在线状态', href: 'join.html' }, { name: '玩家列表', href: 'join.html' }]
+                    },
+                    {
+                        title: '加入步骤',
+                        links: [{ name: '下载游戏', href: 'join.html#steps' }, { name: '配置服务器', href: 'join.html#steps' }, { name: '加入游戏', href: 'join.html#steps' }]
+                    },
+                    {
+                        title: '帮助',
+                        links: [{ name: '连接问题', href: 'join.html#faq' }, { name: '账户注册', href: '#' }, { name: '白名单申请', href: 'join.html#faq' }]
+                    }
+                ]
+            },
+            wiki: {
+                columns: [
+                    {
+                        title: '游戏指南',
+                        links: [{ name: '生存指南', href: '#survival' }, { name: '经济系统', href: '#economy' }, { name: '领地保护', href: '#land' }, { name: '交易系统', href: '#trade' }]
+                    },
+                    {
+                        title: '命令参考',
+                        links: [{ name: '基础命令', href: '#commands' }, { name: '领地命令', href: '#commands' }, { name: '经济命令', href: '#commands' }, { name: '传送命令', href: '#commands' }]
+                    },
+                    {
+                        title: '服务器信息',
+                        links: [{ name: '更新日志', href: '#changelog' }, { name: '活动日历', href: '#' }, { name: '排行榜', href: '#' }, { name: '贡献指南', href: '#' }]
+                    }
+                ]
+            },
+            map: {
+                columns: [
+                    {
+                        title: '地图浏览',
+                        links: [{ name: '主世界地图', href: 'map.html#overworld' }, { name: '下界地图', href: 'map.html#nether' }, { name: '末地地图', href: 'map.html#end' }, { name: '上传地图', href: '#' }]
+                    },
+                    {
+                        title: '位置标记',
+                        links: [{ name: '玩家位置', href: 'map.html#players' }, { name: '建筑标记', href: 'map.html#buildings' }, { name: '资源点', href: 'map.html#resources' }, { name: '商店位置', href: 'map.html#shops' }]
+                    },
+                    {
+                        title: '设置',
+                        links: [{ name: '地图设置', href: 'map.html#settings' }, { name: '显示选项', href: 'map.html#settings' }, { name: '分享位置', href: 'map.html#share' }]
+                    }
+                ]
+            },
+            feedback: {
+                columns: [
+                    {
+                        title: '提交反馈',
+                        links: [{ name: 'Bug 反馈', href: 'feedback.html#bug' }, { name: '功能建议', href: 'feedback.html#suggestion' }, { name: '投诉举报', href: 'feedback.html#report' }, { name: '其他反馈', href: 'feedback.html#other' }]
+                    },
+                    {
+                        title: '帮助支持',
+                        links: [{ name: '常见问题', href: 'feedback.html#faq' }, { name: '联系管理', href: 'feedback.html#contact' }, { name: '申诉通道', href: 'feedback.html#appeal' }]
+                    },
+                    {
+                        title: '社区',
+                        links: [{ name: 'Discord', href: '#' }, { name: 'QQ群', href: '#' }, { name: '论坛', href: '#' }]
+                    }
+                ]
+            }
+        };
+
+        function showMenu(menuKey) {
+            const dropdownWrapper = document.getElementById('dropdownWrapper');
+            const dropdownContent = document.getElementById('dropdownContent');
+            const overlay = document.getElementById('overlay');
+            const navItems = document.querySelectorAll('.nav-item');
+
+            navItems.forEach(item => item.classList.remove('active'));
+
+            currentMenu = menuKey;
+            
+            const activeItem = document.querySelector(`[data-menu="${menuKey}"]`);
+            if (activeItem) activeItem.classList.add('active');
+
+            const menu = menuContent[menuKey];
+            dropdownContent.innerHTML = menu.columns.map(col => `
+                <div class="dropdown-column">
+                    <h3>${col.title}</h3>
+                    <ul>
+                        ${col.links.map(link => `<li><a href="${link.href}">${link.name}</a></li>`).join('')}
+                    </ul>
+                </div>
+            `).join('');
+
+            dropdownWrapper.classList.add('open');
+            overlay.classList.add('visible');
+        }
+
+        function hideMenu() {
+            const dropdownWrapper = document.getElementById('dropdownWrapper');
+            const overlay = document.getElementById('overlay');
+            const navItems = document.querySelectorAll('.nav-item');
+
+            dropdownWrapper.classList.remove('open');
+            overlay.classList.remove('visible');
+            navItems.forEach(item => item.classList.remove('active'));
+            
+            const activeItem = document.querySelector('[data-menu="wiki"]');
+            if (activeItem) activeItem.classList.add('active');
+            
+            currentMenu = null;
+        }
+
+        document.getElementById('overlay').addEventListener('click', hideMenu);
+
+        // 侧边栏导航高亮
+        const sidebarLinks = document.querySelectorAll('.sidebar-nav a');
+        const sections = document.querySelectorAll('.wiki-section');
+
+        function updateActiveLink() {
+            let currentSection = '';
+            sections.forEach(section => {
+                const sectionTop = section.offsetTop - 100;
+                if (window.scrollY >= sectionTop) {
+                    currentSection = section.getAttribute('id');
+                }
+            });
+
+            sidebarLinks.forEach(link => {
+                link.classList.remove('active');
+                if (link.getAttribute('href') === '#' + currentSection) {
+                    link.classList.add('active');
+                }
+            });
+        }
+
+        window.addEventListener('scroll', updateActiveLink);
+    </script>
+</body>
+</html>
