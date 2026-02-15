@@ -1,0 +1,722 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>在线地图 - MTN Server</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+            background: #000;
+            min-height: 100vh;
+            overflow-x: hidden;
+            color: #fff;
+        }
+
+        /* 导航栏容器 */
+        .nav-wrapper {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 1000;
+        }
+
+        /* 导航栏 */
+        .navbar {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 52px;
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: saturate(180%) blur(20px);
+            -webkit-backdrop-filter: saturate(180%) blur(20px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 0 22px;
+            position: relative;
+            z-index: 2;
+        }
+
+        /* Logo */
+        .logo {
+            font-size: 1.4rem;
+            font-weight: 700;
+            letter-spacing: -0.5px;
+            margin-right: 40px;
+            text-decoration: none;
+        }
+
+        .logo .mtn {
+            color: #4C93FB;
+        }
+
+        .logo .server {
+            color: #fff;
+        }
+
+        /* 导航菜单 */
+        .nav-menu {
+            display: flex;
+            gap: 8px;
+        }
+
+        .nav-item {
+            padding: 8px 16px;
+            color: #fff;
+            text-decoration: none;
+            font-size: 0.85rem;
+            font-weight: 400;
+            border-radius: 6px;
+            transition: color 0.3s ease;
+            cursor: pointer;
+            position: relative;
+        }
+
+        .nav-item:hover {
+            color: #4C93FB;
+        }
+
+        .nav-item.active {
+            color: #4C93FB;
+        }
+
+        /* 展开面板 */
+        .dropdown-wrapper {
+            position: absolute;
+            top: 52px;
+            left: 0;
+            right: 0;
+            background: rgba(0, 0, 0, 0.85);
+            backdrop-filter: saturate(180%) blur(20px);
+            -webkit-backdrop-filter: saturate(180%) blur(20px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.4s cubic-bezier(0.32, 0.72, 0, 1),
+                        opacity 0.3s ease;
+            opacity: 0;
+        }
+
+        .dropdown-wrapper.open {
+            max-height: 300px;
+            opacity: 1;
+        }
+
+        .dropdown-content {
+            padding: 30px 0;
+            max-width: 980px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: center;
+            gap: 60px;
+        }
+
+        .dropdown-column {
+            text-align: center;
+            min-width: 180px;
+        }
+
+        .dropdown-column h3 {
+            color: #4C93FB;
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 12px;
+            opacity: 0;
+            transform: translateY(15px);
+            transition: opacity 0.6s ease, transform 0.6s ease;
+        }
+
+        .dropdown-wrapper.open .dropdown-column h3 {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .dropdown-column ul {
+            list-style: none;
+        }
+
+        .dropdown-column li {
+            padding: 6px 0;
+        }
+
+        .dropdown-column a {
+            color: rgba(255, 255, 255, 0.75);
+            text-decoration: none;
+            font-size: 0.9rem;
+            transition: color 0.2s ease;
+            opacity: 0;
+            transform: translateY(12px);
+            display: inline-block;
+        }
+
+        .dropdown-wrapper.open .dropdown-column a {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .dropdown-column a:hover {
+            color: #fff;
+        }
+
+        /* 渐入动画延迟 */
+        .dropdown-column:nth-child(1) h3 { transition-delay: 0.1s; }
+        .dropdown-column:nth-child(2) h3 { transition-delay: 0.2s; }
+        .dropdown-column:nth-child(3) h3 { transition-delay: 0.3s; }
+
+        .dropdown-column:nth-child(1) li:nth-child(1) a { transition-delay: 0.2s; }
+        .dropdown-column:nth-child(1) li:nth-child(2) a { transition-delay: 0.25s; }
+        .dropdown-column:nth-child(1) li:nth-child(3) a { transition-delay: 0.3s; }
+        .dropdown-column:nth-child(1) li:nth-child(4) a { transition-delay: 0.35s; }
+
+        .dropdown-column:nth-child(2) li:nth-child(1) a { transition-delay: 0.3s; }
+        .dropdown-column:nth-child(2) li:nth-child(2) a { transition-delay: 0.35s; }
+        .dropdown-column:nth-child(2) li:nth-child(3) a { transition-delay: 0.4s; }
+        .dropdown-column:nth-child(2) li:nth-child(4) a { transition-delay: 0.45s; }
+
+        .dropdown-column:nth-child(3) li:nth-child(1) a { transition-delay: 0.4s; }
+        .dropdown-column:nth-child(3) li:nth-child(2) a { transition-delay: 0.45s; }
+        .dropdown-column:nth-child(3) li:nth-child(3) a { transition-delay: 0.5s; }
+        .dropdown-column:nth-child(3) li:nth-child(4) a { transition-delay: 0.55s; }
+
+        /* 遮罩层 */
+        .overlay {
+            position: fixed;
+            top: 52px;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.3);
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s ease, visibility 0.3s ease;
+            z-index: 1;
+        }
+
+        .overlay.visible {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        /* 主内容区 */
+        .main-content {
+            padding-top: 52px;
+        }
+
+        /* Hero Section */
+        .page-hero {
+            min-height: 40vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            padding: 60px 20px;
+            background: linear-gradient(180deg, #000 0%, #0a0a1a 100%);
+        }
+
+        .page-title {
+            font-size: 4rem;
+            font-weight: 700;
+            margin-bottom: 20px;
+            letter-spacing: -1px;
+        }
+
+        .page-title .highlight {
+            color: #4C93FB;
+        }
+
+        .page-subtitle {
+            font-size: 1.25rem;
+            color: rgba(255, 255, 255, 0.6);
+            max-width: 600px;
+        }
+
+        /* 地图容器 */
+        .map-container {
+            height: calc(100vh - 52px);
+            position: relative;
+            background: #111;
+        }
+
+        .map-placeholder {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            background: 
+                linear-gradient(rgba(0,0,0,0.7), rgba(0,0,0,0.7)),
+                repeating-linear-gradient(
+                    0deg,
+                    transparent,
+                    transparent 50px,
+                    rgba(76, 147, 251, 0.03) 50px,
+                    rgba(76, 147, 251, 0.03) 51px
+                ),
+                repeating-linear-gradient(
+                    90deg,
+                    transparent,
+                    transparent 50px,
+                    rgba(76, 147, 251, 0.03) 50px,
+                    rgba(76, 147, 251, 0.03) 51px
+                );
+        }
+
+        .map-placeholder-icon {
+            width: 80px;
+            height: 80px;
+            margin-bottom: 20px;
+            opacity: 0.3;
+        }
+
+        .map-placeholder-text {
+            font-size: 1.5rem;
+            color: rgba(255, 255, 255, 0.3);
+            margin-bottom: 10px;
+        }
+
+        .map-placeholder-hint {
+            font-size: 0.9rem;
+            color: rgba(255, 255, 255, 0.2);
+        }
+
+        /* 地图控制面板 */
+        .map-controls {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(20px);
+            border-radius: 12px;
+            padding: 16px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .map-controls h3 {
+            font-size: 0.75rem;
+            color: rgba(255, 255, 255, 0.5);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 12px;
+        }
+
+        .dimension-tabs {
+            display: flex;
+            gap: 8px;
+        }
+
+        .dimension-tab {
+            padding: 8px 16px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 0.85rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .dimension-tab:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .dimension-tab.active {
+            background: rgba(76, 147, 251, 0.2);
+            border-color: rgba(76, 147, 251, 0.5);
+            color: #4C93FB;
+        }
+
+        /* 图层控制 */
+        .layer-controls {
+            margin-top: 16px;
+            padding-top: 16px;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .layer-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 8px 0;
+            cursor: pointer;
+        }
+
+        .layer-checkbox {
+            width: 18px;
+            height: 18px;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+        }
+
+        .layer-item.active .layer-checkbox {
+            background: #4C93FB;
+            border-color: #4C93FB;
+        }
+
+        .layer-item.active .layer-checkbox::after {
+            content: '✓';
+            color: #fff;
+            font-size: 12px;
+        }
+
+        .layer-label {
+            font-size: 0.85rem;
+            color: rgba(255, 255, 255, 0.7);
+        }
+
+        /* 玩家列表 */
+        .player-list {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(20px);
+            border-radius: 12px;
+            padding: 16px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            min-width: 200px;
+        }
+
+        .player-list h3 {
+            font-size: 0.75rem;
+            color: rgba(255, 255, 255, 0.5);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 12px;
+        }
+
+        .player-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 8px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .player-item:last-child {
+            border-bottom: none;
+        }
+
+        .player-avatar {
+            width: 32px;
+            height: 32px;
+            background: linear-gradient(135deg, #4C93FB, #4ade80);
+            border-radius: 50%;
+        }
+
+        .player-info {
+            flex: 1;
+        }
+
+        .player-name {
+            font-size: 0.9rem;
+            color: #fff;
+        }
+
+        .player-coords {
+            font-size: 0.75rem;
+            color: rgba(255, 255, 255, 0.4);
+            font-family: 'Courier New', monospace;
+        }
+
+        .online-status {
+            width: 8px;
+            height: 8px;
+            background: #4ade80;
+            border-radius: 50%;
+        }
+
+        .offline-status {
+            width: 8px;
+            height: 8px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 50%;
+        }
+
+        /* 坐标显示 */
+        .coords-display {
+            position: absolute;
+            bottom: 20px;
+            left: 20px;
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(20px);
+            border-radius: 8px;
+            padding: 12px 16px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            font-family: 'Courier New', monospace;
+            font-size: 0.9rem;
+            color: rgba(255, 255, 255, 0.7);
+        }
+
+        .coords-display span {
+            color: #4C93FB;
+        }
+
+        /* 响应式 */
+        @media (max-width: 768px) {
+            .page-title {
+                font-size: 2.5rem;
+            }
+
+            .map-controls {
+                top: auto;
+                bottom: 80px;
+                left: 10px;
+                right: 10px;
+            }
+
+            .player-list {
+                display: none;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- 遮罩层 -->
+    <div class="overlay" id="overlay"></div>
+
+    <!-- 导航栏 -->
+    <div class="nav-wrapper">
+        <nav class="navbar">
+            <a href="index.html" class="logo">
+                <span class="mtn">MTN</span><span class="server"> Server</span>
+            </a>
+            <div class="nav-menu">
+                <a class="nav-item" data-menu="home" onmouseenter="showMenu('home')">主页</a>
+                <a class="nav-item" data-menu="join" onmouseenter="showMenu('join')">加入服务器</a>
+                <a class="nav-item" data-menu="wiki" onmouseenter="showMenu('wiki')">WIKI</a>
+                <a class="nav-item active" data-menu="map" onmouseenter="showMenu('map')">在线地图</a>
+                <a class="nav-item" data-menu="feedback" onmouseenter="showMenu('feedback')">反馈问题</a>
+            </div>
+        </nav>
+
+        <!-- 下拉面板 -->
+        <div class="dropdown-wrapper" id="dropdownWrapper" onmouseleave="hideMenu()">
+            <div class="dropdown-content" id="dropdownContent">
+                <!-- 动态内容 -->
+            </div>
+        </div>
+    </div>
+
+    <!-- 主内容 -->
+    <main class="main-content">
+        <!-- 地图容器 -->
+        <div class="map-container">
+            <!-- 地图占位 -->
+            <div class="map-placeholder">
+                <svg class="map-placeholder-icon" viewBox="0 0 24 24" fill="rgba(255,255,255,0.3)">
+                    <path d="M20.5 3l-.16.03L15 5.1 9 3 3.36 4.9c-.21.07-.36.25-.36.48V20.5c0 .28.22.5.5.5l.16-.03L9 18.9l6 2.1 5.64-1.9c.21-.07.36-.25.36-.48V3.5c0-.28-.22-.5-.5-.5zM15 19l-6-2.11V5l6 2.11V19z"/>
+                </svg>
+                <div class="map-placeholder-text">地图加载中...</div>
+                <div class="map-placeholder-hint">服务器地图功能即将上线</div>
+            </div>
+
+            <!-- 控制面板 -->
+            <div class="map-controls">
+                <h3>维度选择</h3>
+                <div class="dimension-tabs">
+                    <div class="dimension-tab active" onclick="switchDimension(this, 'overworld')">主世界</div>
+                    <div class="dimension-tab" onclick="switchDimension(this, 'nether')">下界</div>
+                    <div class="dimension-tab" onclick="switchDimension(this, 'end')">末地</div>
+                </div>
+
+                <div class="layer-controls">
+                    <h3>图层显示</h3>
+                    <div class="layer-item active" onclick="toggleLayer(this)">
+                        <div class="layer-checkbox"></div>
+                        <span class="layer-label">玩家位置</span>
+                    </div>
+                    <div class="layer-item active" onclick="toggleLayer(this)">
+                        <div class="layer-checkbox"></div>
+                        <span class="layer-label">建筑标记</span>
+                    </div>
+                    <div class="layer-item" onclick="toggleLayer(this)">
+                        <div class="layer-checkbox"></div>
+                        <span class="layer-label">资源点</span>
+                    </div>
+                    <div class="layer-item" onclick="toggleLayer(this)">
+                        <div class="layer-checkbox"></div>
+                        <span class="layer-label">商店位置</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 玩家列表 -->
+            <div class="player-list">
+                <h3>在线玩家 (0)</h3>
+                <div class="player-item">
+                    <div class="player-avatar"></div>
+                    <div class="player-info">
+                        <div class="player-name">暂无在线玩家</div>
+                        <div class="player-coords">--</div>
+                    </div>
+                    <div class="offline-status"></div>
+                </div>
+            </div>
+
+            <!-- 坐标显示 -->
+            <div class="coords-display">
+                X: <span>0</span> Y: <span>64</span> Z: <span>0</span>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        let currentMenu = null;
+
+        const menuContent = {
+            home: {
+                columns: [
+                    {
+                        title: '概览',
+                        links: [{ name: '服务器介绍', href: 'index.html#intro' }, { name: '游戏特色', href: 'index.html#features' }, { name: '最新动态', href: 'index.html#news' }, { name: '玩家社区', href: 'index.html#community' }]
+                    },
+                    {
+                        title: '快速开始',
+                        links: [{ name: '新手指南', href: 'wiki.html#survival' }, { name: '游戏规则', href: 'wiki.html#rules' }, { name: '常见问题', href: 'join.html#faq' }]
+                    },
+                    {
+                        title: '资源下载',
+                        links: [{ name: '客户端下载', href: '#' }, { name: '模组包', href: '#' }, { name: '材质包', href: '#' }, { name: '皮肤', href: '#' }]
+                    }
+                ]
+            },
+            join: {
+                columns: [
+                    {
+                        title: '连接信息',
+                        links: [{ name: '服务器地址', href: 'join.html' }, { name: '版本要求', href: 'join.html' }, { name: '在线状态', href: 'join.html' }, { name: '玩家列表', href: 'join.html' }]
+                    },
+                    {
+                        title: '加入步骤',
+                        links: [{ name: '下载游戏', href: 'join.html#steps' }, { name: '配置服务器', href: 'join.html#steps' }, { name: '加入游戏', href: 'join.html#steps' }]
+                    },
+                    {
+                        title: '帮助',
+                        links: [{ name: '连接问题', href: 'join.html#faq' }, { name: '账户注册', href: '#' }, { name: '白名单申请', href: 'join.html#faq' }]
+                    }
+                ]
+            },
+            wiki: {
+                columns: [
+                    {
+                        title: '游戏指南',
+                        links: [{ name: '生存指南', href: 'wiki.html#survival' }, { name: '经济系统', href: 'wiki.html#economy' }, { name: '领地保护', href: 'wiki.html#land' }, { name: '交易系统', href: 'wiki.html#trade' }]
+                    },
+                    {
+                        title: '命令参考',
+                        links: [{ name: '基础命令', href: 'wiki.html#commands' }, { name: '领地命令', href: 'wiki.html#commands' }, { name: '经济命令', href: 'wiki.html#commands' }, { name: '传送命令', href: 'wiki.html#commands' }]
+                    },
+                    {
+                        title: '服务器信息',
+                        links: [{ name: '更新日志', href: 'wiki.html#changelog' }, { name: '活动日历', href: '#' }, { name: '排行榜', href: '#' }, { name: '贡献指南', href: '#' }]
+                    }
+                ]
+            },
+            map: {
+                columns: [
+                    {
+                        title: '地图浏览',
+                        links: [{ name: '主世界地图', href: '#overworld' }, { name: '下界地图', href: '#nether' }, { name: '末地地图', href: '#end' }, { name: '上传地图', href: '#' }]
+                    },
+                    {
+                        title: '位置标记',
+                        links: [{ name: '玩家位置', href: '#players' }, { name: '建筑标记', href: '#buildings' }, { name: '资源点', href: '#resources' }, { name: '商店位置', href: '#shops' }]
+                    },
+                    {
+                        title: '设置',
+                        links: [{ name: '地图设置', href: '#settings' }, { name: '显示选项', href: '#settings' }, { name: '分享位置', href: '#share' }]
+                    }
+                ]
+            },
+            feedback: {
+                columns: [
+                    {
+                        title: '提交反馈',
+                        links: [{ name: 'Bug 反馈', href: 'feedback.html#bug' }, { name: '功能建议', href: 'feedback.html#suggestion' }, { name: '投诉举报', href: 'feedback.html#report' }, { name: '其他反馈', href: 'feedback.html#other' }]
+                    },
+                    {
+                        title: '帮助支持',
+                        links: [{ name: '常见问题', href: 'feedback.html#faq' }, { name: '联系管理', href: 'feedback.html#contact' }, { name: '申诉通道', href: 'feedback.html#appeal' }]
+                    },
+                    {
+                        title: '社区',
+                        links: [{ name: 'Discord', href: '#' }, { name: 'QQ群', href: '#' }, { name: '论坛', href: '#' }]
+                    }
+                ]
+            }
+        };
+
+        function showMenu(menuKey) {
+            const dropdownWrapper = document.getElementById('dropdownWrapper');
+            const dropdownContent = document.getElementById('dropdownContent');
+            const overlay = document.getElementById('overlay');
+            const navItems = document.querySelectorAll('.nav-item');
+
+            navItems.forEach(item => item.classList.remove('active'));
+
+            currentMenu = menuKey;
+            
+            const activeItem = document.querySelector(`[data-menu="${menuKey}"]`);
+            if (activeItem) activeItem.classList.add('active');
+
+            const menu = menuContent[menuKey];
+            dropdownContent.innerHTML = menu.columns.map(col => `
+                <div class="dropdown-column">
+                    <h3>${col.title}</h3>
+                    <ul>
+                        ${col.links.map(link => `<li><a href="${link.href}">${link.name}</a></li>`).join('')}
+                    </ul>
+                </div>
+            `).join('');
+
+            dropdownWrapper.classList.add('open');
+            overlay.classList.add('visible');
+        }
+
+        function hideMenu() {
+            const dropdownWrapper = document.getElementById('dropdownWrapper');
+            const overlay = document.getElementById('overlay');
+            const navItems = document.querySelectorAll('.nav-item');
+
+            dropdownWrapper.classList.remove('open');
+            overlay.classList.remove('visible');
+            navItems.forEach(item => item.classList.remove('active'));
+            
+            const activeItem = document.querySelector('[data-menu="map"]');
+            if (activeItem) activeItem.classList.add('active');
+            
+            currentMenu = null;
+        }
+
+        document.getElementById('overlay').addEventListener('click', hideMenu);
+
+        function switchDimension(tab, dimension) {
+            document.querySelectorAll('.dimension-tab').forEach(t => t.classList.remove('active'));
+            tab.classList.add('active');
+            // 实际切换维度的逻辑
+        }
+
+        function toggleLayer(item) {
+            item.classList.toggle('active');
+        }
+    </script>
+</body>
+</html>
