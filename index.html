@@ -421,22 +421,22 @@
     <div class="overlay" id="overlay"></div>
 
     <!-- 导航栏 -->
-    <div class="nav-wrapper">
+    <div class="nav-wrapper" onmouseleave="hideMenu()">
         <nav class="navbar">
-            <div class="logo">
+            <a href="index.html" class="logo">
                 <span class="mtn">MTN</span><span class="server"> Server</span>
-            </div>
+            </a>
             <div class="nav-menu">
-                <a class="nav-item" data-menu="home" onmouseenter="showMenu('home')">主页</a>
-                <a class="nav-item" data-menu="join" onmouseenter="showMenu('join')">加入服务器</a>
-                <a class="nav-item" data-menu="wiki" onmouseenter="showMenu('wiki')">WIKI</a>
-                <a class="nav-item" data-menu="map" onmouseenter="showMenu('map')">在线地图</a>
-                <a class="nav-item" data-menu="feedback" onmouseenter="showMenu('feedback')">反馈问题</a>
+                <a class="nav-item active" data-menu="home" onmouseenter="showMenu('home')">主页</a>
+                <a class="nav-item" href="join.html" onmouseenter="hideMenu()">加入服务器</a>
+                <a class="nav-item" href="wiki.html" onmouseenter="hideMenu()">WIKI</a>
+                <a class="nav-item" href="map.html" onmouseenter="hideMenu()">在线地图</a>
+                <a class="nav-item" href="feedback.html" onmouseenter="hideMenu()">反馈问题</a>
             </div>
         </nav>
 
         <!-- 下拉面板 -->
-        <div class="dropdown-wrapper" id="dropdownWrapper" onmouseleave="hideMenu()">
+        <div class="dropdown-wrapper" id="dropdownWrapper">
             <div class="dropdown-content" id="dropdownContent">
                 <!-- 动态内容 -->
             </div>
@@ -527,70 +527,6 @@
                     {
                         title: '资源下载',
                         links: [{ name: '客户端下载', href: '#' }, { name: '模组包', href: '#' }, { name: '材质包', href: '#' }, { name: '皮肤', href: '#' }]
-                    }
-                ]
-            },
-            join: {
-                columns: [
-                    {
-                        title: '连接信息',
-                        links: [{ name: '服务器地址', href: 'join.html' }, { name: '版本要求', href: 'join.html' }, { name: '在线状态', href: 'join.html' }, { name: '玩家列表', href: 'join.html' }]
-                    },
-                    {
-                        title: '加入步骤',
-                        links: [{ name: '下载游戏', href: 'join.html#steps' }, { name: '配置服务器', href: 'join.html#steps' }, { name: '加入游戏', href: 'join.html#steps' }]
-                    },
-                    {
-                        title: '帮助',
-                        links: [{ name: '连接问题', href: 'join.html#faq' }, { name: '账户注册', href: '#' }, { name: '白名单申请', href: 'join.html#faq' }]
-                    }
-                ]
-            },
-            wiki: {
-                columns: [
-                    {
-                        title: '游戏指南',
-                        links: [{ name: '生存指南', href: 'wiki.html#survival' }, { name: '经济系统', href: 'wiki.html#economy' }, { name: '领地保护', href: 'wiki.html#land' }, { name: '交易系统', href: 'wiki.html#trade' }]
-                    },
-                    {
-                        title: '命令参考',
-                        links: [{ name: '基础命令', href: 'wiki.html#commands' }, { name: '领地命令', href: 'wiki.html#commands' }, { name: '经济命令', href: 'wiki.html#commands' }, { name: '传送命令', href: 'wiki.html#commands' }]
-                    },
-                    {
-                        title: '服务器信息',
-                        links: [{ name: '更新日志', href: 'wiki.html#changelog' }, { name: '活动日历', href: '#' }, { name: '排行榜', href: '#' }, { name: '贡献指南', href: '#' }]
-                    }
-                ]
-            },
-            map: {
-                columns: [
-                    {
-                        title: '地图浏览',
-                        links: [{ name: '主世界地图', href: 'map.html#overworld' }, { name: '下界地图', href: 'map.html#nether' }, { name: '末地地图', href: 'map.html#end' }, { name: '上传地图', href: '#' }]
-                    },
-                    {
-                        title: '位置标记',
-                        links: [{ name: '玩家位置', href: 'map.html#players' }, { name: '建筑标记', href: 'map.html#buildings' }, { name: '资源点', href: 'map.html#resources' }, { name: '商店位置', href: 'map.html#shops' }]
-                    },
-                    {
-                        title: '设置',
-                        links: [{ name: '地图设置', href: 'map.html#settings' }, { name: '显示选项', href: 'map.html#settings' }, { name: '分享位置', href: 'map.html#share' }]
-                    }
-                ]
-            },
-            feedback: {
-                columns: [
-                    {
-                        title: '提交反馈',
-                        links: [{ name: 'Bug 反馈', href: 'feedback.html#bug' }, { name: '功能建议', href: 'feedback.html#suggestion' }, { name: '投诉举报', href: 'feedback.html#report' }, { name: '其他反馈', href: 'feedback.html#other' }]
-                    },
-                    {
-                        title: '帮助支持',
-                        links: [{ name: '常见问题', href: 'feedback.html#faq' }, { name: '联系管理', href: 'feedback.html#contact' }, { name: '申诉通道', href: 'feedback.html#appeal' }]
-                    },
-                    {
-                        title: '社区',
-                        links: [{ name: 'Discord', href: '#' }, { name: 'QQ群', href: '#' }, { name: '论坛', href: '#' }]
                     }
                 ]
             }
