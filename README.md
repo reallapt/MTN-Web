@@ -56,12 +56,6 @@ MTN Server 的官方网站，提供服务器信息展示、导航、反馈等功
 - 群号：1064494318
 - 一键复制加群链接功能
 
-## 技术栈
-
-- **前端**: 纯 HTML + CSS + JavaScript
-- **样式**: 原生 CSS，毛玻璃效果（backdrop-filter）
-- **服务**: Python HTTP Server
-- **主题色**: `#4C93FB` (MTN 蓝)
 
 ## 功能特性
 
@@ -71,20 +65,6 @@ MTN Server 的官方网站，提供服务器信息展示、导航、反馈等功
 - Hero 区域滚动渐出效果
 - iframe 嵌套外部网站
 - 复制成功提示动画
-
-## 本地运行
-
-项目使用 Python HTTP Server 运行在 5000 端口：
-
-```bash
-python -m http.server 5000 --bind 0.0.0.0
-```
-
-或使用 coze CLI：
-
-```bash
-coze dev
-```
 
 ## 外部链接
 
@@ -99,7 +79,7 @@ coze dev
 
 ## 作者
 
-MTN 腐竹
+reallapt
 
 ## 许可证
 
